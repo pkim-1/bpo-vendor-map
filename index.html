@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TPA BPO Vendor Interactive Map - Greg Schultze's Organization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        select, input {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        select:hover, input:hover {
+            border-color: #667eea;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .vendor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .vendor-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vendor-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .vendor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .vendor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .vendor-name {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2c3e50;
+            flex: 1;
+        }
+
+        .vendor-badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .vendor-location {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .value-produced {
+            background: linear-gradient(135deg, #00b894 0%, #00d2d3 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .value-label {
+            font-size: 0.75em;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .value-amount {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .value-note {
+            font-size: 0.75em;
+            opacity: 0.9;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .vendor-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .detail-label {
+            font-size: 0.75em;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .capabilities {
+            background: #e8f4f8;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .capabilities-title {
+            font-size: 0.85em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .capabilities-text {
+            font-size: 0.9em;
+            color: #34495e;
+            line-height: 1.4;
+        }
+
+        .team-sponsor {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 12px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.85em;
+        }
+
+        .team-info, .sponsor-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .info-label {
+            color: #7f8c8d;
+            font-weight: 600;
+        }
+
+        .info-value {
+            color: #2c3e50;
+        }
+
+        .renewal-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 8px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: #856404;
+        }
+
+        .renewal-ok {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            padding: 8px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: #155724;
+        }
+
+        .roi-highlight {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 8px;
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: #e65100;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .vendor-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 TPA BPO Vendor Map</h1>
+        <div class="subtitle">Greg Schultze's Organization - Travel Partnerships & Advertising</div>
+
+        <div class="summary-stats">
+            <div class="stat-card">
+                <span class="stat-number" id="totalVendors">12</span>
+                <span class="stat-label">Total BPO Vendors</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="totalAgents">~460</span>
+                <span class="stat-label">Total FTE Agents</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="totalCost">~$12.5M</span>
+                <span class="stat-label">Annual Contract Value</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="totalValue">$1.45B+</span>
+                <span class="stat-label">Total Revenue Contribution</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="filterTeam">Filter by Team:</label>
+                <select id="filterTeam">
+                    <option value="all">All Teams</option>
+                    <option value="PGA">PGA (Partner Growth)</option>
+                    <option value="EGA">EGA (Advertising)</option>
+                    <option value="Partner Solutions">Partner Solutions/Trips</option>
+                    <option value="TPA Global">TPA Global/Back-Office</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="searchVendor">Search Vendor:</label>
+                <input type="text" id="searchVendor" placeholder="Type vendor name...">
+            </div>
+
+            <div class="control-group">
+                <label for="sortBy">Sort by:</label>
+                <select id="sortBy">
+                    <option value="value">Revenue Contribution (High to Low)</option>
+                    <option value="cost">Annual Cost (High to Low)</option>
+                    <option value="agents">FTE Count (High to Low)</option>
+                    <option value="name">Vendor Name (A-Z)</option>
+                    <option value="renewal">Contract Renewal Date</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="vendor-grid" id="vendorGrid"></div>
+    </div>
+
+    <script>
+        const vendors = [
+            {
+                name: "Foundever",
+                location: "El Salvador",
+                team: "PGA",
+                teamFull: "PGA - NORAM (Partner Growth & Acquisition)",
+                capabilities: "Outbound Sales and Account Management for Hotel/VR",
+                annualCost: 3.00,
+                costPerHour: 20.44,
+                fteCount: 150,
+                renewal: "2026-04-01",
+                vpSponsor: "Hari Nair, Orla Lee",
+                contractTerms: "Evergreen/1-year term with auto-renewals",
+                risks: "Investing as single COE in AMER, BCP options using location agnostic model required",
+                valueProduced: { amount: 370, metric: "GBV", note: "Part of $740M PGA footprint protected" }
+            },
+            {
+                name: "Yoummday",
+                location: "Prague, Czech Republic",
+                team: "PGA",
+                teamFull: "PGA - EMEA (Partner Growth & Acquisition)",
+                capabilities: "Outbound Sales and Account Management for VR (Vacation Rentals)",
+                annualCost: 1.32,
+                costPerHour: 23.45,
+                fteCount: 43,
+                renewal: "2026-03-04",
+                vpSponsor: "Hari Nair, Orla Lee",
+                contractTerms: "Evergreen/1-year term with auto-renewals",
+                risks: "Legal Risk - Ongoing review of gig-based delivery model compliance",
+                valueProduced: { amount: 200, metric: "GBV", note: "Part of $740M PGA footprint, VR-focused" }
+            },
+            {
+                name: "Foundever",
+                location: "Athens, Greece",
+                team: "PGA",
+                teamFull: "PGA - EMEA (Partner Growth & Acquisition)",
+                capabilities: "Outbound Sales and Account Management for Hotel/VR",
+                annualCost: 1.78,
+                costPerHour: 33.76,
+                fteCount: 40,
+                renewal: "2026-05-01",
+                vpSponsor: "Hari Nair, Orla Lee",
+                contractTerms: "Evergreen/1-year term with auto-renewals",
+                risks: "5% Volume discount, training at 80% of productive hour rate",
+                valueProduced: { amount: 170, metric: "GBV", note: "Part of $740M PGA footprint protected" }
+            },
+            {
+                name: "YourBow",
+                location: "Serbia, Montenegro & Philippines",
+                team: "EGA",
+                teamFull: "EGA - Global (Expedia Group Advertising)",
+                capabilities: "Travel Ads Triage, Ad Operations & Programmatic Support",
+                annualCost: 1.205,
+                costPerHour: 15.40,
+                fteCount: 42,
+                renewal: "2026-06-01",
+                vpSponsor: "Lucy Yu (now under Brandon Ehrhardt)",
+                contractTerms: "Annual renewal, rates differentiate per location",
+                risks: "Account management currently under review, could be more strategic",
+                valueProduced: { amount: 50, metric: "Ad Revenue", note: "Supports EGA portfolio operations" }
+            },
+            {
+                name: "Media Trust",
+                location: "McLean, VA, USA",
+                team: "EGA",
+                teamFull: "EGA - Global (Expedia Group Advertising)",
+                capabilities: "Campaign Verification, Creative Policy Enforcement, Encryption Compliance, Malware Detection",
+                annualCost: 0.280,
+                costPerHour: "Usage Based",
+                fteCount: 34,
+                renewal: "2026-06-06",
+                vpSponsor: "Lucy Yu (now under Brandon Ehrhardt)",
+                contractTerms: "Annual renewal, $35 per scan for 401+ scans",
+                risks: "Needs research as not prioritized yet",
+                valueProduced: { amount: 0, metric: "Quality Control", note: "Risk mitigation & compliance" }
+            },
+            {
+                name: "Accenture",
+                location: "Costa Rica & Mumbai, India",
+                team: "EGA",
+                teamFull: "EGA - Global (Expedia Group Advertising)",
+                capabilities: "Delivers Campaign Ideas and Strategies",
+                annualCost: 2.07,
+                costPerHour: 41.65,
+                fteCount: 24,
+                renewal: "2026-02-28",
+                vpSponsor: "Lucy Yu (now under Brandon Ehrhardt)",
+                contractTerms: "Annual renewal, per role/per hour for 6 roles",
+                risks: "Rates differentiate per location, needs research",
+                valueProduced: { amount: 80, metric: "Campaign Value", note: "Strategic campaign ideation" }
+            },
+            {
+                name: "Media Mint",
+                location: "Hyderabad, India",
+                team: "EGA",
+                teamFull: "EGA - Global (Expedia Group Advertising)",
+                capabilities: "Advertisement Operations, Builds Travel Ad Campaigns",
+                annualCost: 0.480,
+                costPerHour: 18.46,
+                fteCount: 14,
+                renewal: "2026-05-08",
+                vpSponsor: "Lucy Yu (now under Brandon Ehrhardt)",
+                contractTerms: "Annual renewal, rate per role for 3 roles",
+                risks: "Needs research as not prioritized yet",
+                valueProduced: { amount: 30, metric: "Ad Revenue", note: "Campaign building operations" }
+            },
+            {
+                name: "Foundever",
+                location: "El Salvador",
+                team: "EGA",
+                teamFull: "EGA - NORAM (Advertising - Pilot)",
+                capabilities: "Travel Ads Acquisition - Outbound Sales (6 month pilot)",
+                annualCost: 0.20,
+                costPerHour: 20.44,
+                fteCount: 5,
+                renewal: "2025-12-31",
+                vpSponsor: "Lucy Yu (now under Brandon Ehrhardt)",
+                contractTerms: "6 month pilot amendment to PGA contract",
+                risks: "Ringfenced budget to scale, pilot phase",
+                valueProduced: { amount: 2, metric: "Ad Revenue", note: "Pilot phase - scaling potential" }
+            },
+            {
+                name: "ATI",
+                location: "Jakarta, Indonesia",
+                team: "Partner Solutions",
+                teamFull: "Trips - Global (Air, Car, Activities)",
+                capabilities: "Airfare Support - Partner Solutions",
+                annualCost: 0.626,
+                costPerHour: 9.52,
+                fteCount: 35,
+                renewal: "2027-07-31",
+                vpSponsor: "Chris Hodges, Paul Kim",
+                contractTerms: "3 roles with different rates, based on total FTE count",
+                risks: "Delivery Risk (Salesforce case structure), Political instability in Jakarta",
+                valueProduced: { amount: 25, metric: "Support Value", note: "Air partner support operations" }
+            },
+            {
+                name: "Teleperformance",
+                location: "Lima, Peru",
+                team: "Partner Solutions",
+                teamFull: "Onboarding & Maintenance - Global",
+                capabilities: "Property Onboarding & Maintenance, Car Support",
+                annualCost: 1.43,
+                costPerHour: 23.68,
+                fteCount: 33,
+                renewal: "Auto-renewal",
+                vpSponsor: "Chris Hodges, Paul Kim",
+                contractTerms: "Evergreen/1-year term, per productive hours",
+                risks: "Needs research - prioritization required",
+                valueProduced: { amount: 40, metric: "Properties Onboarded", note: "Onboarding & maintenance value" }
+            },
+            {
+                name: "Sutherland",
+                location: "India",
+                team: "Partner Solutions",
+                teamFull: "Air Partner Solutions",
+                capabilities: "Air Commissions, ADM Processing, Invoice Management",
+                annualCost: 0.85,
+                costPerHour: 16.20,
+                fteCount: 28,
+                renewal: "2026-09-15",
+                vpSponsor: "Chris Hodges, Paul Kim",
+                contractTerms: "Annual renewal with volume-based pricing",
+                risks: "Contract and invoicing process needs improvement",
+                valueProduced: { amount: 20, metric: "Processing Value", note: "Air commissions & ADM processing" }
+            },
+            {
+                name: "Startek",
+                location: "Bangalore, India",
+                team: "TPA Global",
+                teamFull: "TPA - Global Back-Office",
+                capabilities: "Back-Office, SOX Compliance, Contract Review & Compliance",
+                annualCost: 0.48,
+                costPerHour: 9.54,
+                fteCount: 34,
+                renewal: "Auto-renewal",
+                vpSponsor: "Paul Kim (Solutions & Capabilities)",
+                contractTerms: "Evergreen, billed on forecast, no overages",
+                risks: "Quality audits for revenue impacting processes (SOX, re-contracting)",
+                valueProduced: { amount: 510, metric: "RMD", note: "$510M RMD protected via contracting & SOX" }
+            }
+        ];
+
+        function formatCurrency(amount) {
+            return `$${amount.toFixed(2)}M`;
+        }
+
+        function formatValue(value) {
+            if (!value || !value.amount) return null;
+            if (value.metric === "RMD" || value.metric === "GBV") {
+                return `$${value.amount}M ${value.metric}`;
+            } else if (value.metric === "Ad Revenue" || value.metric === "Campaign Value") {
+                return `$${value.amount}M ${value.metric}`;
+            } else {
+                return `${value.metric}`;
+            }
+        }
+
+        function getValueNumeric(vendor) {
+            return vendor.valueProduced ? vendor.valueProduced.amount : 0;
+        }
+
+        function formatDate(dateString) {
+            if (dateString === "Auto-renewal") return dateString;
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function getDaysUntilRenewal(dateString) {
+            if (dateString === "Auto-renewal") return 9999;
+            const today = new Date();
+            const renewal = new Date(dateString);
+            const diff = Math.ceil((renewal - today) / (1000 * 60 * 60 * 24));
+            return diff;
+        }
+
+        function getRenewalStatus(dateString) {
+            const days = getDaysUntilRenewal(dateString);
+            if (dateString === "Auto-renewal") {
+                return { class: 'renewal-ok', text: '✓ Auto-renewal contract' };
+            } else if (days < 0) {
+                return { class: 'renewal-warning', text: `⚠️ EXPIRED ${Math.abs(days)} days ago` };
+            } else if (days < 90) {
+                return { class: 'renewal-warning', text: `⚠️ Renewal in ${days} days` };
+            } else {
+                return { class: 'renewal-ok', text: `✓ Renewal: ${formatDate(dateString)}` };
+            }
+        }
+
+        function calculateROI(vendor) {
+            if (!vendor.valueProduced || !vendor.valueProduced.amount) return null;
+            const value = vendor.valueProduced.amount;
+            const cost = vendor.annualCost;
+            if (cost === 0) return null;
+            return (value / cost).toFixed(1);
+        }
+
+        function createVendorCard(vendor) {
+            const renewalStatus = getRenewalStatus(vendor.renewal);
+            const roi = calculateROI(vendor);
+            const valueDisplay = formatValue(vendor.valueProduced);
+
+            return `
+                <div class="vendor-card" data-team="${vendor.team}" data-name="${vendor.name.toLowerCase()}">
+                    <div class="vendor-header">
+                        <div class="vendor-name">${vendor.name}</div>
+                        <div class="vendor-badge">${vendor.team}</div>
+                    </div>
+
+                    <div class="vendor-location">
+                        📍 ${vendor.location}
+                    </div>
+
+                    ${valueDisplay ? `
+                    <div class="value-produced">
+                        <div class="value-label">💰 Revenue Contribution / Value Impact</div>
+                        <div class="value-amount">${valueDisplay}</div>
+                        <div class="value-note">${vendor.valueProduced.note}</div>
+                    </div>
+                    ` : ''}
+
+                    <div class="capabilities">
+                        <div class="capabilities-title">Capabilities:</div>
+                        <div class="capabilities-text">${vendor.capabilities}</div>
+                    </div>
+
+                    <div class="vendor-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Annual Cost</div>
+                            <div class="detail-value">${formatCurrency(vendor.annualCost)}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">FTE Count</div>
+                            <div class="detail-value">${vendor.fteCount} agents</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Cost per Hour</div>
+                            <div class="detail-value">${typeof vendor.costPerHour === 'number' ? '$' + vendor.costPerHour.toFixed(2) : vendor.costPerHour}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Contract</div>
+                            <div class="detail-value">${vendor.contractTerms.substring(0, 25)}...</div>
+                        </div>
+                    </div>
+
+                    ${roi ? `
+                    <div class="roi-highlight">
+                        📊 ROI: ${roi}x return on investment
+                    </div>
+                    ` : ''}
+
+                    <div class="team-sponsor">
+                        <div class="team-info">
+                            <span class="info-label">EG Team:</span>
+                            <span class="info-value">${vendor.teamFull}</span>
+                        </div>
+                        <div class="sponsor-info">
+                            <span class="info-label">VP Sponsor:</span>
+                            <span class="info-value">${vendor.vpSponsor}</span>
+                        </div>
+                    </div>
+
+                    <div class="${renewalStatus.class}">
+                        ${renewalStatus.text}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderVendors(filteredVendors) {
+            const grid = document.getElementById('vendorGrid');
+            grid.innerHTML = filteredVendors.map(vendor => createVendorCard(vendor)).join('');
+
+            // Update stats
+            const totalAgents = filteredVendors.reduce((sum, v) => sum + v.fteCount, 0);
+            const totalCost = filteredVendors.reduce((sum, v) => sum + v.annualCost, 0);
+            const totalValue = filteredVendors.reduce((sum, v) => sum + getValueNumeric(v), 0);
+
+            document.getElementById('totalVendors').textContent = filteredVendors.length;
+            document.getElementById('totalAgents').textContent = totalAgents;
+            document.getElementById('totalCost').textContent = formatCurrency(totalCost);
+            document.getElementById('totalValue').textContent = totalValue > 0 ? `$${(totalValue/1000).toFixed(2)}B+` : 'N/A';
+        }
+
+        function filterAndSortVendors() {
+            const teamFilter = document.getElementById('filterTeam').value;
+            const searchText = document.getElementById('searchVendor').value.toLowerCase();
+            const sortBy = document.getElementById('sortBy').value;
+
+            let filtered = vendors.filter(vendor => {
+                const matchesTeam = teamFilter === 'all' || vendor.team === teamFilter;
+                const matchesSearch = vendor.name.toLowerCase().includes(searchText) ||
+                                     vendor.location.toLowerCase().includes(searchText) ||
+                                     vendor.capabilities.toLowerCase().includes(searchText);
+                return matchesTeam && matchesSearch;
+            });
+
+            // Sort
+            filtered.sort((a, b) => {
+                switch(sortBy) {
+                    case 'value':
+                        return getValueNumeric(b) - getValueNumeric(a);
+                    case 'cost':
+                        return b.annualCost - a.annualCost;
+                    case 'agents':
+                        return b.fteCount - a.fteCount;
+                    case 'name':
+                        return a.name.localeCompare(b.name);
+                    case 'renewal':
+                        return getDaysUntilRenewal(a.renewal) - getDaysUntilRenewal(b.renewal);
+                    default:
+                        return 0;
+                }
+            });
+
+            renderVendors(filtered);
+        }
+
+        // Event listeners
+        document.getElementById('filterTeam').addEventListener('change', filterAndSortVendors);
+        document.getElementById('searchVendor').addEventListener('input', filterAndSortVendors);
+        document.getElementById('sortBy').addEventListener('change', filterAndSortVendors);
+
+        // Initial render with value sorting
+        document.getElementById('sortBy').value = 'value';
+        filterAndSortVendors();
+    </script>
+</body>
+</html>
